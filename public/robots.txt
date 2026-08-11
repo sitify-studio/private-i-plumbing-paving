@@ -1,13 +1,22 @@
 User-Agent: *
 
 Allow: /
-Allow: /about
-Allow: /contact
+Allow: /about-us
+Allow: /contact-us
 Allow: /testimonials
-Allow: /service
-Allow: /service/
+Allow: /gallery
 Allow: /serving-areas
-Allow: /service/remodel-plumbing/
+Allow: /privacy-policy
+Allow: /terms-of-service
+
+Allow: /service/
+Allow: /service/plumbing-fixture-repairs-and-replacements
+Allow: /service/remodel-plumbing
+Allow: /service/residential-plumbing
+
+Allow: /service/plumbing-fixture-repairs-and-replacements/service-areas/
+Allow: /service/remodel-plumbing/service-areas/
+Allow: /service/residential-plumbing/service-areas/
 
 Disallow: /api/
 Disallow: /_next/
