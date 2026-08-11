@@ -1,55 +1,37 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server'
+import {
+  fetchBuilderSite,
+  resolvePublicOrigin,
+  resolveRobotsTxt,
+} from '@/app/lib/siteFiles'
 
-export async function GET(request: NextRequest) {
+/** Always re-read builder robots.txt on each request. */
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+const NO_CACHE = 'no-store, max-age=0, must-revalidate'
+
+export async function GET() {
+  const origin = resolvePublicOrigin()
+
   try {
-    // Fetch site data directly from backend API
-    const siteSlug = process.env.NEXT_PUBLIC_WEBBUILDER_SITE_SLUG;
-    if (!siteSlug) {
-      throw new Error('Site slug not configured');
-    }
-
-    // Use the same API base URL as the template
-    const rawBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 
-      (process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:5000/api');
-    
-    const isLocalRaw = /^http:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?\b/i.test(rawBaseUrl);
-    const API_BASE_URL = rawBaseUrl.startsWith('http://') && !isLocalRaw
-      ? rawBaseUrl.replace(/^http:\/\//i, 'https://')
-      : rawBaseUrl;
-
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-
-    // Fetch site data
-    const siteResponse = await fetch(`${API_BASE_URL}/public/sites/${siteSlug}`);
-    
-    if (!siteResponse.ok) {
-      throw new Error('Failed to fetch site data');
-    }
-
-    const siteData = await siteResponse.json();
-    const site = siteData.data?.data ?? siteData.data;
-    
-    // Use custom robots.txt from site files if available, otherwise use default
-    let robotsTxt = site.files?.robotsTxt || `User-agent: *
-Disallow:
-Sitemap: ${baseUrl}/sitemap.xml`;
-
-    // Replace placeholder sitemap URL with actual base URL
-    robotsTxt = robotsTxt.replace(/Sitemap:.*sitemap\.xml/, `Sitemap: ${baseUrl}/sitemap.xml`);
+    const site = await fetchBuilderSite()
+    const robotsTxt = resolveRobotsTxt(site, origin)
 
     return new NextResponse(robotsTxt, {
       headers: {
-        'Content-Type': 'text/plain',
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': NO_CACHE,
       },
-    });
+    })
   } catch (error) {
-    console.error('Error generating robots.txt:', error);
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-    return new NextResponse(`User-agent: *\nDisallow:\nSitemap: ${baseUrl}/sitemap.xml`, {
-      status: 500,
+    console.error('Error generating robots.txt:', error)
+    return new NextResponse(resolveRobotsTxt(null, origin), {
+      status: 200,
       headers: {
-        'Content-Type': 'text/plain',
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Cache-Control': NO_CACHE,
       },
-    });
+    })
   }
 }

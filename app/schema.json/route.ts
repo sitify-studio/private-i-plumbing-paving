@@ -1,109 +1,99 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server'
+import { getImageSrc } from '@/app/lib/utils'
+import {
+  fetchBuilderSite,
+  resolveBuilderSchema,
+  resolvePublicOrigin,
+} from '@/app/lib/siteFiles'
 
-export async function GET(request: NextRequest) {
+/** Always re-read builder schema on each request. */
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+const NO_CACHE = 'no-store, max-age=0, must-revalidate'
+
+export async function GET() {
+  const origin = resolvePublicOrigin()
+
   try {
-    // Fetch site data directly from backend API
-    const siteSlug = process.env.NEXT_PUBLIC_WEBBUILDER_SITE_SLUG;
-    if (!siteSlug) {
-      throw new Error('Site slug not configured');
+    const site = await fetchBuilderSite()
+
+    const builderSchema = resolveBuilderSchema(site)
+    if (builderSchema) {
+      return NextResponse.json(builderSchema, {
+        headers: {
+          'Content-Type': 'application/ld+json; charset=utf-8',
+          'Cache-Control': NO_CACHE,
+        },
+      })
     }
 
-    // Use the same API base URL as the template
-    const rawBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 
-      (process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:5000/api');
-    
-    const isLocalRaw = /^http:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?\b/i.test(rawBaseUrl);
-    const API_BASE_URL = rawBaseUrl.startsWith('http://') && !isLocalRaw
-      ? rawBaseUrl.replace(/^http:\/\//i, 'https://')
-      : rawBaseUrl;
+    const schemaJson: Record<string, unknown>[] = []
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    if (site?.business?.name) {
+      const logoSrc = getImageSrc(site.theme?.logoUrl)
+      const logoUrl = logoSrc
+        ? /^https?:\/\//i.test(logoSrc)
+          ? logoSrc
+          : `${origin}${logoSrc.startsWith('/') ? '' : '/'}${logoSrc}`
+        : undefined
 
-    // Fetch site data
-    const siteResponse = await fetch(`${API_BASE_URL}/public/sites/${siteSlug}`);
-    
-    if (!siteResponse.ok) {
-      throw new Error('Failed to fetch site data');
+      schemaJson.push({
+        '@context': 'https://schema.org',
+        '@type': 'Organization',
+        name: site.business.name,
+        url: origin,
+        ...(logoUrl ? { logo: logoUrl } : {}),
+        ...(site.business.email || site.business.phone
+          ? {
+              contactPoint: {
+                '@type': 'ContactPoint',
+                telephone: site.business.phone || undefined,
+                contactType: 'customer service',
+                email: site.business.email || undefined,
+              },
+            }
+          : {}),
+        ...(site.business.address
+          ? {
+              address: {
+                '@type': 'PostalAddress',
+                streetAddress: site.business.address.street,
+                addressLocality: site.business.address.city,
+                addressRegion: site.business.address.state,
+                postalCode: site.business.address.zipCode,
+                addressCountry: site.business.address.country || 'US',
+              },
+            }
+          : {}),
+        ...(site.socialLinks?.length
+          ? { sameAs: site.socialLinks.map((link) => link.url) }
+          : {}),
+      })
     }
 
-    const siteData = await siteResponse.json();
-    const site = siteData.data?.data ?? siteData.data;
-    
-    // Build schema from site data
-    const schemaJson = [];
-
-    // Organization schema
-    if (site.business?.name) {
-      const organizationSchema = {
-        "@context": "https://schema.org",
-        "@type": "Organization",
-        "name": site.business.name,
-        "url": baseUrl,
-        ...(site.theme?.logoUrl && { "logo": `${baseUrl}${site.theme.logoUrl}` }),
-        ...(site.business?.email && { 
-          "contactPoint": {
-            "@type": "ContactPoint",
-            "telephone": site.business.phone || "+1-555-123-4567",
-            "contactType": "customer service",
-            "email": site.business.email
-          }
-        }),
-        ...(site.business?.address && {
-          "address": {
-            "@type": "PostalAddress",
-            "streetAddress": site.business.address.street,
-            "addressLocality": site.business.address.city,
-            "addressRegion": site.business.address.state,
-            "postalCode": site.business.address.zipCode,
-            "addressCountry": site.business.address.country || "US"
-          }
-        }),
-        ...(site.socialLinks && site.socialLinks.length > 0 && {
-          "sameAs": site.socialLinks.map((link: any) => link.url)
-        })
-      };
-      schemaJson.push(organizationSchema);
-    }
-
-    // WebSite schema
-    const websiteSchema = {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": site.name,
-      "url": baseUrl,
-      ...(site.seo?.description && { "description": site.seo.description }),
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": `${baseUrl}/search?q={search_term_string}`,
-        "query-input": "required name=search_term_string"
-      }
-    };
-    schemaJson.push(websiteSchema);
-
-    // Add custom schema from site files if available
-    if (site.files?.schemaJson) {
-      try {
-        const customSchemas = JSON.parse(site.files.schemaJson);
-        if (Array.isArray(customSchemas)) {
-          schemaJson.push(...customSchemas);
-        }
-      } catch (error) {
-        console.warn('Invalid custom schema JSON in site files:', error);
-      }
-    }
+    schemaJson.push({
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: site?.name || site?.business?.name || 'Web Builder Site',
+      url: origin,
+      ...(site?.seo?.description ? { description: site.seo.description } : {}),
+    })
 
     return NextResponse.json(schemaJson, {
       headers: {
-        'Content-Type': 'application/ld+json',
+        'Content-Type': 'application/ld+json; charset=utf-8',
+        'Cache-Control': NO_CACHE,
       },
-    });
+    })
   } catch (error) {
-    console.error('Error generating schema.json:', error);
+    console.error('Error generating schema.json:', error)
     return NextResponse.json([], {
-      status: 500,
+      status: 200,
       headers: {
-        'Content-Type': 'application/ld+json',
+        'Content-Type': 'application/ld+json; charset=utf-8',
+        'Cache-Control': NO_CACHE,
       },
-    });
+    })
   }
 }

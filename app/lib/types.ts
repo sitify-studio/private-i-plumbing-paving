@@ -37,6 +37,15 @@ export interface Site {
     gtmId?: string;
     gaId?: string;
   };
+  /** Sitify Studio → Integrations (tracking / verification / Maps). */
+  integrations?: {
+    ga4?: string;
+    gtmHead?: string;
+    gtmBody?: string;
+    googleAds?: string;
+    searchConsoleVerification?: string;
+    googleMaps?: string;
+  };
   theme: {
     logoUrl?: string;
     // Text Colors

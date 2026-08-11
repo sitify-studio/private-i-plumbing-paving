@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Page, Site, Service, BlogPost, ServiceAreaPage } from './types'
 import { getSiteOrigin } from './seo'
 import { getImageSrc } from './utils'
+import { resolveSearchConsoleVerification } from './integrations'
 
 interface SEOData {
   title?: string
@@ -14,7 +15,7 @@ interface SEOData {
 /** Same-origin proxy — avoids default app/favicon.ico winning over CMS webp. */
 export const SITE_ICON_PATH = '/site-icon'
 
-/** Google Search Console site verification token. */
+/** @deprecated Prefer resolveSearchConsoleVerification(site.integrations) */
 export const GOOGLE_SITE_VERIFICATION = 'iUoem80N28H3flAJGuDkdcx_h-7bua6uBEgPlOOrhks'
 
 /** Resolve CMS favicon (falls back to logo so tabs never look empty). */
@@ -62,12 +63,15 @@ export function generateMetadata(seoData: SEOData, site?: Site): Metadata {
   const siteName = site?.business?.name || site?.name || 'Web Builder Site'
   const finalTitle = title ? `${title} | ${siteName}` : siteName
   
+  const searchConsole =
+    resolveSearchConsoleVerification(site?.integrations) || GOOGLE_SITE_VERIFICATION
+
   const metadata: Metadata = {
     title: finalTitle,
     description: description || site?.business?.description || 'Generated site using Web Builder',
     keywords: keywords?.join(', ') || site?.seo?.keywords?.join(', '),
     verification: {
-      google: GOOGLE_SITE_VERIFICATION,
+      google: searchConsole,
     },
   }
 

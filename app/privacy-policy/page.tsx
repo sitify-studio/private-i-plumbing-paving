@@ -65,7 +65,11 @@ export default function PrivacyPolicyPage() {
                       fontFamily: themeFonts.body || 'var(--wb-body-font, inherit)'
                     }}
                   >
-                    <TiptapRenderer content={privacyPolicy.content} />
+                    {typeof privacyPolicy.content === 'string' ? (
+                      <div dangerouslySetInnerHTML={{ __html: privacyPolicy.content }} />
+                    ) : (
+                      <TiptapRenderer content={privacyPolicy.content} />
+                    )}
                   </div>
                 ) : (
                   <div 
@@ -131,7 +135,10 @@ export default function PrivacyPolicyPage() {
                 className="text-sm text-center"
                 style={{ color: themeColors.lightPrimaryText }}
               >
-                Last updated: {new Date().toLocaleDateString()}
+                Last updated:{' '}
+                {site?.updatedAt
+                  ? new Date(site.updatedAt).toLocaleDateString()
+                  : new Date().toLocaleDateString()}
               </p>
             </div>
           </div>

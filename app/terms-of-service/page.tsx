@@ -65,7 +65,11 @@ export default function TermsOfServicePage() {
                       fontFamily: themeFonts.body || 'var(--wb-body-font, inherit)'
                     }}
                   >
-                    <TiptapRenderer content={termsOfService.content} />
+                    {typeof termsOfService.content === 'string' ? (
+                      <div dangerouslySetInnerHTML={{ __html: termsOfService.content }} />
+                    ) : (
+                      <TiptapRenderer content={termsOfService.content} />
+                    )}
                   </div>
                 ) : (
                   <div 
@@ -131,7 +135,10 @@ export default function TermsOfServicePage() {
                 className="text-sm text-center"
                 style={{ color: themeColors.lightSecondaryText }}
               >
-                Last updated: {new Date().toLocaleDateString()}
+                Last updated:{' '}
+                {site?.updatedAt
+                  ? new Date(site.updatedAt).toLocaleDateString()
+                  : new Date().toLocaleDateString()}
               </p>
             </div>
           </div>

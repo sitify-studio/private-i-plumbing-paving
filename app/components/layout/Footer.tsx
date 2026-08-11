@@ -35,6 +35,11 @@ const DEFAULT_COMPANY_LINKS = [
   { href: '/contact-us', text: 'Contact' },
 ];
 
+const LEGAL_FOOTER_LINKS = [
+  { href: '/terms-of-service', text: 'Terms of Service', kind: 'terms' as const },
+  { href: '/privacy-policy', text: 'Privacy Policy', kind: 'privacy' as const },
+];
+
 function isGalleryFooterLink(href: string, text?: string): boolean {
   const h = href.trim().toLowerCase();
   const label = (text || '').trim().toLowerCase();
@@ -44,6 +49,47 @@ function isGalleryFooterLink(href: string, text?: string): boolean {
     h.endsWith('/gallery') ||
     label === 'gallery'
   );
+}
+
+function hasLegalLink(
+  links: { href: string; text: string }[],
+  kind: 'terms' | 'privacy'
+): boolean {
+  return links.some((link) => {
+    const href = link.href.trim().toLowerCase().replace(/\/+$/, '');
+    const label = link.text.trim().toLowerCase();
+    if (kind === 'terms') {
+      return (
+        href === '/terms-of-service' ||
+        href === '/terms' ||
+        href.endsWith('/terms-of-service') ||
+        label.includes('terms of service') ||
+        label === 'terms'
+      );
+    }
+    return (
+      href === '/privacy-policy' ||
+      href === '/privacy' ||
+      href.endsWith('/privacy-policy') ||
+      label.includes('privacy policy') ||
+      label === 'privacy'
+    );
+  });
+}
+
+function withLegalLinks(
+  links: { href: string; text: string }[],
+  hasTerms: boolean,
+  hasPrivacy: boolean
+): { href: string; text: string }[] {
+  const next = [...links];
+  for (const legal of LEGAL_FOOTER_LINKS) {
+    const enabled = legal.kind === 'terms' ? hasTerms : hasPrivacy;
+    if (!enabled) continue;
+    if (hasLegalLink(next, legal.kind)) continue;
+    next.push({ href: legal.href, text: legal.text });
+  }
+  return next;
 }
 
 export function Footer() {
@@ -77,23 +123,28 @@ export function Footer() {
       columns.find((col) => /company|explore|page/i.test(col.title || '')) ||
       columns[0];
 
+    let links: { href: string; text: string }[] = [];
+
     if (companyColumn?.links?.length) {
-      return companyColumn.links
+      links = companyColumn.links
         .map((link) => ({
           href: normalizeHref(link.url),
           text: link.label,
         }))
         .filter((link) => !isGalleryFooterLink(link.href, link.text));
+    } else {
+      const navLinks = getFooterNavLinks(pages);
+      if (navLinks.length) {
+        links = navLinks
+          .map((link) => ({ href: link.href, text: link.label }))
+          .filter((link) => !isGalleryFooterLink(link.href, link.text));
+      } else {
+        links = [...DEFAULT_COMPANY_LINKS];
+      }
     }
 
-    const navLinks = getFooterNavLinks(pages);
-    if (navLinks.length) {
-      return navLinks
-        .map((link) => ({ href: link.href, text: link.label }))
-        .filter((link) => !isGalleryFooterLink(link.href, link.text));
-    }
-
-    return DEFAULT_COMPANY_LINKS;
+    // Always expose legal pages once — skip if CMS already added them
+    return withLegalLinks(links, true, true);
   }, [site?.footer?.columns, pages]);
 
   const footerServices = useMemo(() => {

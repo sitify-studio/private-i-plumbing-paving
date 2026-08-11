@@ -1,38 +1,41 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server'
+import { fetchBuilderSite } from '@/app/lib/siteFiles'
 
-export async function GET(request: NextRequest) {
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+const NO_CACHE = 'no-store, max-age=0, must-revalidate'
+
+/** Expose builder legal content (Terms + Privacy) for clients — always fresh. */
+export async function GET() {
   try {
-    // Fetch site data directly from backend API
-    const siteSlug = process.env.NEXT_PUBLIC_WEBBUILDER_SITE_SLUG;
-    if (!siteSlug) {
-      throw new Error('Site slug not configured');
+    const site = await fetchBuilderSite()
+    if (!site) {
+      return NextResponse.json(
+        { success: false, error: { message: 'Site not found' } },
+        { status: 404, headers: { 'Cache-Control': NO_CACHE } }
+      )
     }
 
-    // Use the same API base URL as the template
-    const rawBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 
-      (process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:5000/api');
-    
-    const isLocalRaw = /^http:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?\b/i.test(rawBaseUrl);
-    const API_BASE_URL = rawBaseUrl.startsWith('http://') && !isLocalRaw
-      ? rawBaseUrl.replace(/^http:\/\//i, 'https://')
-      : rawBaseUrl;
-
-    // Direct fetch to avoid circular dependency
-    const response = await fetch(`${API_BASE_URL}/public/sites/${siteSlug}`);
-    const responseData = await response.json();
-    const site = responseData.data?.data ?? responseData.data;
-    
-    return NextResponse.json({
-      success: true,
-      data: {
-        legal: site.legal || {}
-      }
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          legal: site.legal || {},
+          files: {
+            sitemap: Boolean(site.files?.sitemap),
+            robotsTxt: Boolean(site.files?.robotsTxt),
+            schemaJson: Boolean(site.files?.schemaJson),
+          },
+        },
+      },
+      { headers: { 'Cache-Control': NO_CACHE } }
+    )
   } catch (error) {
-    console.error('Error fetching legal files:', error);
+    console.error('Error fetching legal files:', error)
     return NextResponse.json(
       { success: false, error: { message: 'Failed to fetch legal files' } },
-      { status: 500 }
-    );
+      { status: 500, headers: { 'Cache-Control': NO_CACHE } }
+    )
   }
 }

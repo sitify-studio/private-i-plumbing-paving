@@ -1,5 +1,6 @@
 import { Metadata } from 'next'
 import { generateMetadata as buildMetadata, getSiteSeoData, GOOGLE_SITE_VERIFICATION } from '@/app/lib/metadata'
+import { resolveSearchConsoleVerification } from '@/app/lib/integrations'
 import { Page, Site } from '@/app/lib/types'
 import api from '@/app/lib/fetch-api'
 import HomeClient from './HomeClient'
@@ -11,7 +12,9 @@ export async function generateMetadata(): Promise<Metadata> {
       return {
         title: 'Web Builder Site',
         description: 'Generated site using Web Builder',
-        verification: { google: GOOGLE_SITE_VERIFICATION },
+        verification: {
+          google: resolveSearchConsoleVerification(null) || GOOGLE_SITE_VERIFICATION,
+        },
       }
     }
     const defaultSiteResponse = await api.get(`/public/sites/${siteSlug}`, { silent: true })
@@ -50,7 +53,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: 'Web Builder Site',
     description: 'Generated site using Web Builder',
-    verification: { google: GOOGLE_SITE_VERIFICATION },
+    verification: {
+      google: resolveSearchConsoleVerification(null) || GOOGLE_SITE_VERIFICATION,
+    },
   }
 }
 
