@@ -1,0 +1,3 @@
+User-agent: *
+Disallow:
+Sitemap: https://www.privateiplumbing.com/sitemap.xml
