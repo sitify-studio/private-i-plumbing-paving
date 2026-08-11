@@ -1,3 +1,17 @@
-User-agent: *
-Disallow:
+User-Agent: *
+
+Allow: /
+Allow: /about
+Allow: /contact
+Allow: /testimonials
+Allow: /service
+Allow: /service/
+Allow: /serving-areas
+Allow: /service/remodel-plumbing/
+
+Disallow: /api/
+Disallow: /_next/
+Disallow: /admin/
+Disallow: /private/
+
 Sitemap: https://www.privateiplumbing.com/sitemap.xml
