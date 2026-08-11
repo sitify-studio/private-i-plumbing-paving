@@ -5,7 +5,7 @@ import {
   resolveRobotsTxt,
 } from '@/app/lib/siteFiles'
 
-/** Always re-read builder robots.txt on each request. */
+/** Always re-read builder `files.robotsTxt` on each request (no cache). */
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 

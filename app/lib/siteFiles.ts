@@ -79,19 +79,28 @@ export async function fetchBuilderSite(): Promise<Site | null> {
   }
 }
 
-/** Prefer builder robots.txt; force absolute Sitemap URL. */
+/**
+ * Prefer builder robots.txt as-is.
+ * Only rewrite relative Sitemap paths (e.g. `/sitemap.xml`) to absolute.
+ * Absolute Sitemap URLs from the builder are left unchanged.
+ */
 export function resolveRobotsTxt(site: Site | null, origin: string): string {
   const fallback = `User-agent: *
 Disallow:
 Sitemap: ${origin}/sitemap.xml`
 
-  let robots = site?.files?.robotsTxt?.trim() || fallback
+  const fromBuilder = site?.files?.robotsTxt?.trim()
+  let robots = fromBuilder || fallback
 
   if (/Sitemap:/i.test(robots)) {
-    robots = robots.replace(
-      /Sitemap:\s*[^\r\n]+/i,
-      `Sitemap: ${origin}/sitemap.xml`
-    )
+    robots = robots.replace(/Sitemap:\s*([^\r\n]+)/i, (_m, loc: string) => {
+      const value = String(loc).trim()
+      if (/^https?:\/\//i.test(value)) {
+        return `Sitemap: ${value}`
+      }
+      const path = value.startsWith('/') ? value : `/${value}`
+      return `Sitemap: ${origin}${path === '/' ? '/sitemap.xml' : path}`
+    })
   } else {
     robots = `${robots.replace(/\s*$/, '')}\nSitemap: ${origin}/sitemap.xml`
   }
