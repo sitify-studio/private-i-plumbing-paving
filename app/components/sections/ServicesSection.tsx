@@ -319,8 +319,8 @@ export function ServicesSection({
             </div>
           </div>
 
-          <div className="relative lg:col-span-6 lg:col-start-7 lg:min-h-full xl:col-span-7 xl:col-start-6">
-            <div className="lg:sticky lg:top-28 lg:min-h-full">
+            <div className="relative lg:col-span-6 lg:col-start-7 lg:min-h-full xl:col-span-7 xl:col-start-6">
+            <div className="lg:sticky lg:top-28">
               <div
                 className="relative aspect-[4/3] w-full max-h-[min(420px,50vh)] overflow-hidden border bg-[var(--wb-page-bg)] shadow-[0_16px_40px_color-mix(in_srgb,var(--wb-text-main)_6%,transparent)]"
                 style={{

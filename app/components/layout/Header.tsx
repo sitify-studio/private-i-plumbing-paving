@@ -115,6 +115,7 @@ export function Header({ businessName, themeData, phoneNumber }: HeaderProps) {
     const aboutPage = pages.find((p) => p.pageType === 'about');
     const servicesPage = pages.find((p) => p.pageType === 'service-list');
     const contactPage = pages.find((p) => p.pageType === 'contact');
+    const blogPage = pages.find((p) => p.pageType === 'blog-list');
     const testimonialsNav = getTestimonialsNavItem(pages);
     const servicesHref = servicesPage ? getPageHref(servicesPage) : '/services';
 
@@ -131,6 +132,11 @@ export function Header({ businessName, themeData, phoneNumber }: HeaderProps) {
         isServices: true,
       },
       { href: '/gallery', label: 'Gallery', isServices: false },
+      {
+        href: blogPage ? getPageHref(blogPage) : '/blog',
+        label: 'Blog',
+        isServices: false,
+      },
       {
         href: testimonialsNav.href,
         label: testimonialsNav.name,

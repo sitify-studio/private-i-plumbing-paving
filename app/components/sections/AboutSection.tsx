@@ -123,33 +123,34 @@ export function AboutSection({ aboutSection, page, className }: AboutSectionProp
       <EditorialBackdrop primaryColor={primaryColor} />
       <SectionTopAccent primaryColor={primaryColor} />
 
-      <div ref={triggerRef} className={SECTION.container}>
-        <div className={SECTION.header}>
-          <div className="min-w-0 lg:col-span-12">
-            <p
-              className={SECTION.label}
-              style={{
-                fontFamily: 'var(--wb-body-font, sans-serif)',
-                color: primaryColor,
-                opacity: loaded ? 1 : 0,
-                transform: loaded ? 'translateY(0)' : 'translateY(20px)',
-                transition: `opacity 0.6s ${EASE}, transform 0.6s ${EASE}`,
-              }}
-            >
-              <span className={SECTION.labelBar} style={{ backgroundColor: primaryColor }} />
-              About Us
-            </p>
-            <AnimatedHeading
-              title={resolvedTitle}
-              loaded={loaded}
-              baseDelay={0.2}
-              lightSweep
-            />
-          </div>
-        </div>
-
-        <div className={`${SECTION.content} grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-stretch lg:gap-10`}>
+<div ref={triggerRef} className={SECTION.container}>
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-stretch lg:gap-10">
           <div className="min-w-0 lg:col-span-6">
+            <div className={SECTION.header}>
+              <div className="min-w-0 lg:col-span-12">
+                <p
+                  className={SECTION.label}
+                  style={{
+                    fontFamily: 'var(--wb-body-font, sans-serif)',
+                    color: primaryColor,
+                    opacity: loaded ? 1 : 0,
+                    transform: loaded ? 'translateY(0)' : 'translateY(20px)',
+                    transition: `opacity 0.6s ${EASE}, transform 0.6s ${EASE}`,
+                  }}
+                >
+                  <span className={SECTION.labelBar} style={{ backgroundColor: primaryColor }} />
+                  About Us
+                </p>
+                <AnimatedHeading
+                  title={resolvedTitle}
+                  loaded={loaded}
+                  baseDelay={0.2}
+                  lightSweep
+                />
+              </div>
+            </div>
+
+<div className={`${SECTION.content} mt-6 lg:mt-10`}>
             {resolvedDescription && (
               <p
                 className={`max-w-lg ${SECTION.body}`}
@@ -234,9 +235,10 @@ export function AboutSection({ aboutSection, page, className }: AboutSectionProp
               </span>
             </Link>
           </div>
+          </div>
 
           <div
-            className="relative min-w-0 lg:col-span-6 lg:h-full"
+            className="relative min-w-0 lg:col-span-6"
             style={{
               opacity: loaded ? 1 : 0,
               clipPath: loaded ? 'inset(0 0 0 0)' : 'inset(0 0 0 100%)',
@@ -245,7 +247,7 @@ export function AboutSection({ aboutSection, page, className }: AboutSectionProp
             }}
           >
             <div
-              className="h-full will-change-transform"
+              className="relative will-change-transform lg:absolute lg:inset-0"
               style={{
                 transform: imageTransform,
                 transition: loaded
@@ -254,7 +256,7 @@ export function AboutSection({ aboutSection, page, className }: AboutSectionProp
               }}
             >
               <div
-                className="group relative aspect-[4/3] w-full overflow-hidden border sm:aspect-[16/10] lg:h-full"
+                className="group relative aspect-[4/3] w-full overflow-hidden border sm:aspect-[16/10] lg:absolute lg:inset-0 lg:aspect-auto"
                 style={{
                   borderColor: borderTint,
                   backgroundColor: themeSurface(primaryColor, 0.04),

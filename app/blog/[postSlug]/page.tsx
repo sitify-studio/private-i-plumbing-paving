@@ -2,7 +2,6 @@
 
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { blogApi } from '@/app/lib/api';
 import { useWebBuilder } from '@/app/providers/WebBuilderProvider';
 import { Footer } from '@/app/components/layout/Footer';
@@ -13,7 +12,7 @@ import { OptimizedImage, IMAGE_QUALITY_HIGH, IMAGE_SIZES } from '@/app/component
 import { useThemeColors, useThemeFonts } from '@/app/hooks/useTheme';
 import { SeoHead } from '@/app/components/ui/SeoHead';
 import { normalizeSeoImage, tiptapToText, truncate } from '@/app/lib/seo';
-import { ArrowLeft } from 'lucide-react';
+import { QuickContactCard, RelatedArticlesCard } from '@/app/components/sections/ServiceSidebarCards';
 
 export default function BlogPostPage() {
     const params = useParams();
@@ -82,7 +81,7 @@ export default function BlogPostPage() {
                                 priority
                                 className="object-cover"
                             />
-                            <div className="absolute inset-0 bg-black/40" /> 
+                            <div className="absolute inset-0 bg-black/60" /> 
                         </div>
                     )}
                     
@@ -94,8 +93,8 @@ export default function BlogPostPage() {
                                 </span>
                             )}
                             <h1 
-                                className="text-3xl md:text-5xl lg:text-6xl text-white font-extralight uppercase leading-[1.1] tracking-tight md:tracking-[-0.02em] text-balance"
-                                style={{ fontFamily: themeFonts.heading }}
+                                className="text-3xl md:text-5xl lg:text-6xl font-extralight uppercase leading-[1.1] tracking-tight md:tracking-[-0.02em] text-balance"
+                                style={{ fontFamily: themeFonts.heading, color: 'white' }}
                             >
                                 {post.title}
                             </h1>
@@ -103,51 +102,32 @@ export default function BlogPostPage() {
                     </div>
                 </div>
 
-                {/* METADATA BAR - BLACK TEXT FOR VISIBILITY */}
-                <div className="border-y" style={{ borderColor: `rgba(0, 0, 0, 0.1)`, backgroundColor: themeColors.pageBackground }}>
-                    <div className="container mx-auto px-6 lg:px-12 py-8 flex flex-wrap gap-8 md:gap-16 items-center">
-                        <div className="space-y-1">
-                            <span className="text-[9px] uppercase tracking-[0.3em] block" style={{ color: 'rgba(0, 0, 0, 0.5)' }}>Published</span>
-                            <span className="text-xs uppercase tracking-widest font-medium" style={{ color: '#000000' }}>
-                                {new Date(post.publishedAt!).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
-                            </span>
-                        </div>
-                        
-                        <Link
-                            href="/blog"
-                            className="ml-auto flex items-center gap-2 group text-[10px] uppercase tracking-[0.4em] hover:opacity-100 transition-opacity"
-                            style={{ color: '#000000' }}
-                        >
-                            <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> Back to Blog
-                        </Link>
-                    </div>
-                </div>
+                {/* MAIN CONTENT & SIDEBAR */}
+                <main className="relative py-20 lg:py-32">
+                    <div className="w-full px-6 lg:px-12">
+                        <div className="grid gap-16 lg:grid-cols-12 xl:gap-24">
+                            {/* Left Side: Blog Content */}
+                            <div className="space-y-20 lg:col-span-8 lg:max-w-5xl">
+                                <div 
+                                    className="prose prose-lg md:prose-xl max-w-none prose-headings:uppercase prose-headings:font-light prose-headings:tracking-widest prose-img:rounded-none prose-blockquote:border-l prose-blockquote:italic"
+                                    style={{ 
+                                        color: themeColors.mainText, 
+                                        fontFamily: themeFonts.body,
+                                    }}
+                                >
+                                    <TiptapRenderer content={post.content || post.excerpt} />
+                                </div>
 
-                {/* CONTENT AREA - SOLID BLACK TEXT */}
-                <div className="container px-6 lg:px-12 py-10 lg:py-14">
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
-                        
-                        <article className="lg:col-span-8 lg:col-start-3">
-                            <div 
-                                className="prose prose-lg md:prose-xl max-w-none prose-headings:uppercase prose-headings:font-light prose-headings:tracking-widest prose-img:rounded-none prose-blockquote:border-l prose-blockquote:italic !text-black"
-                                style={{ 
-                                    color: '#000000', 
-                                    fontFamily: themeFonts.body,
-                                }}
-                            >
-                                <TiptapRenderer content={post.content || post.excerpt} />
-                            </div>
-
-                            {/* Tags - Minimalist style */}
-                            {post.tags && post.tags.length > 0 && (
-                                <div className="mt-12 pt-8 flex flex-wrap gap-4" style={{ borderTop: `1px solid rgba(0, 0, 0, 0.1)` }}>
+                                {/* Tags - Minimalist style */}
+{post.tags && post.tags.length > 0 && (
+                                <div className="mt-12 pt-8 flex flex-wrap gap-4" style={{ borderTop: `1px solid ${themeColors.inactive}` }}>
                                     {post.tags.map(tag => (
                                         <span
                                             key={tag}
                                             className="text-[10px] uppercase tracking-[0.3em] px-4 py-2"
                                             style={{
-                                                backgroundColor: `rgba(0, 0, 0, 0.05)`,
-                                                color: '#000000'
+                                                backgroundColor: themeColors.cardBackgroundLight,
+                                                color: themeColors.mainText
                                             }}
                                         >
                                             #{tag}
@@ -155,41 +135,27 @@ export default function BlogPostPage() {
                                     ))}
                                 </div>
                             )}
-                        </article>
-                    </div>
-                </div>
 
-                {/* RELATED ARTICLES */}
-                {otherPosts.length > 0 && (
-                    <section className="py-24 lg:py-32" style={{ backgroundColor: `rgba(0, 0, 0, 0.02)` }}>
-                        <div className="container mx-auto px-6 lg:px-12">
-                            <h3 className="text-[11px] uppercase tracking-[0.6em] text-center mb-16 opacity-40 text-black" style={{ fontFamily: themeFonts.heading }}>
-                                More Blogs
-                            </h3>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-px" style={{ backgroundColor: `rgba(0, 0, 0, 0.1)` }}>
-                                {otherPosts.map(other => (
-                                    <Link
-                                        key={other._id}
-                                        href={`/blog/${other.slug}`}
-                                        className="group p-8 lg:p-12 transition-colors flex flex-col h-full"
-                                        style={{ backgroundColor: themeColors.pageBackground }}
-                                    >
-                                        <span className="text-[9px] uppercase tracking-[0.4em] mb-4 opacity-40 block text-black">Next Article</span>
-                                        <h4 className="text-xl uppercase font-light tracking-wide mb-8 group-hover:opacity-60 transition-opacity flex-grow text-black">
-                                            {other.title}
-                                        </h4>
-                                        <span className="text-[10px] uppercase tracking-[0.4em] font-bold flex items-center gap-4 text-black">
-                                            Explore <ArrowLeft size={14} className="rotate-180" />
-                                        </span>
-                                    </Link>
-                                ))}
                             </div>
-                        </div>
-                    </section>
-                )}
-            </main>
 
-            <Footer />
+                            {/* Right Side: Sticky Sidebar */}
+                            <aside className="relative lg:col-span-4 lg:ml-auto lg:max-w-sm">
+                                <div className="space-y-12 lg:sticky lg:top-32">
+                                    {/* Related Articles */}
+                                    {otherPosts.length > 0 && (
+                                        <RelatedArticlesCard posts={otherPosts} />
+                                    )}
+
+                                    {/* Quick Contact */}
+                                    <QuickContactCard service={{ name: post.title }} />
+                                </div>
+                            </aside>
+                        </div>
+                    </div>
+                </main>
+
+                <Footer />
+            </main>
         </div>
     );
 }

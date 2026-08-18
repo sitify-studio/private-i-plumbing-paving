@@ -111,7 +111,7 @@ export function BlogSection({ blogSection, className }: BlogSectionProps) {
     if (!current && !fallback) return undefined;
 
     return {
-      enabled: current?.enabled ?? fallback?.enabled ?? false,
+      enabled: current?.enabled ?? fallback?.enabled ?? true,
       postsToShow: current?.postsToShow ?? fallback?.postsToShow ?? 3,
       showExcerpt: current?.showExcerpt ?? fallback?.showExcerpt ?? true,
       showDate: current?.showDate ?? fallback?.showDate ?? true,
@@ -336,7 +336,7 @@ function PostMeta({
           {category}
         </span>
       )}
-      {author && <span>By {author}</span>}
+      
       {dateLabel && <span>{dateLabel}</span>}
     </div>
   );

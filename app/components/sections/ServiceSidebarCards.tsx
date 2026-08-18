@@ -100,6 +100,108 @@ export const OtherServicesCard: React.FC<OtherServicesCardProps> = ({ otherServi
     );
 };
 
+interface RelatedArticlePost {
+    _id: string;
+    slug: string;
+    title?: string;
+}
+
+interface RelatedArticlesCardProps {
+    posts: RelatedArticlePost[];
+    onViewAll?: string;
+}
+
+export const RelatedArticlesCard: React.FC<RelatedArticlesCardProps> = ({ posts, onViewAll = '/blog' }) => {
+    const themeColors = useThemeColors();
+    const themeFonts = useThemeFonts();
+
+    if (!posts || posts.length === 0) return null;
+
+    return (
+        <div className="border-l-2 pl-6 md:pl-8" style={{ borderColor: `${themeColors.primaryButton}40` }}>
+            <h3
+                className="text-xs md:text-sm font-bold tracking-[0.3em] uppercase mb-6"
+                style={{
+                    color: themeColors.mainText,
+                    fontFamily: themeFonts.heading
+                }}
+            >
+                More Blogs
+            </h3>
+
+            <ul className="space-y-5">
+                {posts.map((post, index) => (
+                    <li key={post._id}>
+                        <Link
+                            href={`/blog/${post.slug}`}
+                            className="group flex items-start gap-4 transition-all duration-300"
+                        >
+                            <span
+                                className="text-[10px] font-bold uppercase tracking-[0.2em] pt-1 shrink-0"
+                                style={{
+                                    color: themeColors.primaryButton,
+                                    fontFamily: themeFonts.heading
+                                }}
+                            >
+                                {String(index + 1).padStart(2, '0')}
+                            </span>
+                            <span className="min-w-0 flex-1">
+                                <span
+                                    className="block text-sm font-light tracking-wide leading-snug line-clamp-2 group-hover:opacity-70 transition-opacity"
+                                    style={{
+                                        color: themeColors.mainText,
+                                        fontFamily: themeFonts.body
+                                    }}
+                                >
+                                    {post.title}
+                                </span>
+                                <span
+                                    className="mt-2 inline-flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.3em] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                    style={{
+                                        color: themeColors.primaryButton,
+                                        fontFamily: themeFonts.body
+                                    }}
+                                >
+                                    Read Article
+                                    <svg
+                                        className="w-3 h-3"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                    </svg>
+                                </span>
+                            </span>
+                        </Link>
+                    </li>
+                ))}
+            </ul>
+
+            <div className="mt-8 pt-6 border-t" style={{ borderColor: `${themeColors.inactive}15` }}>
+                <Link
+                    href={onViewAll}
+                    className="group inline-flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.3em] transition-all duration-300 hover:gap-4"
+                    style={{
+                        color: themeColors.primaryButton,
+                        fontFamily: themeFonts.body
+                    }}
+                >
+                    View All
+                    <svg
+                        className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                </Link>
+            </div>
+        </div>
+    );
+};
+
 export const QuickContactCard: React.FC<QuickContactCardProps> = ({ service }) => {
     const themeColors = useThemeColors();
     const themeFonts = useThemeFonts();
