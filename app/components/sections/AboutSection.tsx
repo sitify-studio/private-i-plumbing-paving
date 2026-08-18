@@ -148,8 +148,8 @@ export function AboutSection({ aboutSection, page, className }: AboutSectionProp
           </div>
         </div>
 
-        <div className={`${SECTION.content} grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-center lg:gap-10`}>
-          <div className="min-w-0 lg:col-span-5 xl:col-span-4">
+        <div className={`${SECTION.content} grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-stretch lg:gap-10`}>
+          <div className="min-w-0 lg:col-span-6">
             {resolvedDescription && (
               <p
                 className={`max-w-lg ${SECTION.body}`}
@@ -236,7 +236,7 @@ export function AboutSection({ aboutSection, page, className }: AboutSectionProp
           </div>
 
           <div
-            className="relative min-w-0 lg:col-span-7 lg:col-start-6 xl:col-span-8 xl:col-start-5"
+            className="relative min-w-0 lg:col-span-6 lg:h-full"
             style={{
               opacity: loaded ? 1 : 0,
               clipPath: loaded ? 'inset(0 0 0 0)' : 'inset(0 0 0 100%)',
@@ -245,7 +245,7 @@ export function AboutSection({ aboutSection, page, className }: AboutSectionProp
             }}
           >
             <div
-              className="will-change-transform"
+              className="h-full will-change-transform"
               style={{
                 transform: imageTransform,
                 transition: loaded
@@ -254,7 +254,7 @@ export function AboutSection({ aboutSection, page, className }: AboutSectionProp
               }}
             >
               <div
-                className="group relative aspect-[4/3] w-full overflow-hidden border sm:aspect-[16/10]"
+                className="group relative aspect-[4/3] w-full overflow-hidden border sm:aspect-[16/10] lg:h-full"
                 style={{
                   borderColor: borderTint,
                   backgroundColor: themeSurface(primaryColor, 0.04),

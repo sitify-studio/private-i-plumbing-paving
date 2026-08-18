@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { OptimizedImage, IMAGE_SIZES } from '@/app/components/ui/OptimizedImage';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useWebBuilder } from '@/app/providers/WebBuilderProvider';
 import { resolvePrimaryCta } from '@/app/components/ui/made';
 import { TiptapRenderer } from '@/app/components/ui/TiptapRenderer';
@@ -29,27 +29,10 @@ function normalizeHref(href: string): string {
   return t.startsWith('/') ? t : `/${t}`;
 }
 
-const DEFAULT_COMPANY_LINKS = [
-  { href: '/about-us', text: 'About Us' },
-  { href: '/services', text: 'Services' },
-  { href: '/contact-us', text: 'Contact' },
-];
-
 const LEGAL_FOOTER_LINKS = [
   { href: '/terms-of-service', text: 'Terms of Service', kind: 'terms' as const },
   { href: '/privacy-policy', text: 'Privacy Policy', kind: 'privacy' as const },
 ];
-
-function isGalleryFooterLink(href: string, text?: string): boolean {
-  const h = href.trim().toLowerCase();
-  const label = (text || '').trim().toLowerCase();
-  return (
-    h === '/gallery' ||
-    h === '#gallery' ||
-    h.endsWith('/gallery') ||
-    label === 'gallery'
-  );
-}
 
 function hasLegalLink(
   links: { href: string; text: string }[],
@@ -117,35 +100,33 @@ export function Footer() {
     return 'Transforming properties through professional land clearing, forestry mulching, grading, and site preparation services.';
   }, [site, pages]);
 
-  const companyLinks = useMemo(() => {
-    const columns = site?.footer?.columns ?? [];
-    const companyColumn =
-      columns.find((col) => /company|explore|page/i.test(col.title || '')) ||
-      columns[0];
+  const [pagesOpen, setPagesOpen] = useState(false);
 
-    let links: { href: string; text: string }[] = [];
+  const directNavLinks = useMemo(() => {
+    const home = pages.find((p) => p.pageType === 'home');
+    const about = pages.find((p) => p.pageType === 'about');
+    const contact = pages.find((p) => p.pageType === 'contact');
+    const servicesPage = pages.find((p) => p.pageType === 'service-list');
+    return [
+      { label: 'Home', href: home ? getPageHref(home) : '/' },
+      { label: 'About', href: about ? getPageHref(about) : '/about-us' },
+      { label: 'Contact', href: contact ? getPageHref(contact) : '/contact-us' },
+      {
+        label: 'Services',
+        href: servicesPage ? getPageHref(servicesPage) : '/services',
+      },
+    ];
+  }, [pages]);
 
-    if (companyColumn?.links?.length) {
-      links = companyColumn.links
-        .map((link) => ({
-          href: normalizeHref(link.url),
-          text: link.label,
-        }))
-        .filter((link) => !isGalleryFooterLink(link.href, link.text));
-    } else {
-      const navLinks = getFooterNavLinks(pages);
-      if (navLinks.length) {
-        links = navLinks
-          .map((link) => ({ href: link.href, text: link.label }))
-          .filter((link) => !isGalleryFooterLink(link.href, link.text));
-      } else {
-        links = [...DEFAULT_COMPANY_LINKS];
-      }
-    }
-
-    // Always expose legal pages once — skip if CMS already added them
-    return withLegalLinks(links, true, true);
-  }, [site?.footer?.columns, pages]);
+  const morePages = useMemo(() => {
+    const allPages = withLegalLinks(
+      getFooterNavLinks(pages).map((link) => ({ href: link.href, text: link.label })),
+      true,
+      true
+    );
+    const directHrefs = new Set(directNavLinks.map((link) => link.href));
+    return allPages.filter((link) => !directHrefs.has(link.href));
+  }, [pages, directNavLinks]);
 
   const footerServices = useMemo(() => {
     const columns = site?.footer?.columns ?? [];
@@ -311,9 +292,9 @@ export function Footer() {
                 Company
               </p>
               <nav className="divide-y border-y" style={{ borderColor: borderTint }}>
-                {companyLinks.map((link) => (
+                {directNavLinks.map((link) => (
                   <Link
-                    key={`${link.href}-${link.text}`}
+                    key={link.href}
                     href={link.href}
                     className="group flex items-center gap-3 py-3 text-sm text-[var(--wb-text-secondary)] transition-colors hover:text-[var(--wb-text-main)]"
                     style={{ fontFamily: 'var(--wb-body-font, sans-serif)' }}
@@ -322,9 +303,68 @@ export function Footer() {
                       className="h-px w-3 shrink-0 transition-all duration-300 group-hover:w-5"
                       style={{ backgroundColor: primaryColor }}
                     />
-                    {link.text}
+                    {link.label}
                   </Link>
                 ))}
+
+                {morePages.length > 0 && (
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => setPagesOpen((open) => !open)}
+                      aria-expanded={pagesOpen}
+                      className="group flex w-full items-center gap-3 py-3 text-left text-sm text-[var(--wb-text-secondary)] transition-colors hover:text-[var(--wb-text-main)]"
+                      style={{ fontFamily: 'var(--wb-body-font, sans-serif)' }}
+                    >
+                      <span
+                        className="h-px w-3 shrink-0 transition-all duration-300 group-hover:w-5"
+                        style={{ backgroundColor: primaryColor }}
+                      />
+                      Pages
+                      <span
+                        className="ml-auto text-xs transition-transform duration-300"
+                        style={{ color: primaryColor }}
+                        aria-hidden="true"
+                      >
+                        {pagesOpen ? '−' : '+'}
+                      </span>
+                    </button>
+
+                    <div
+                      className="grid transition-all duration-500"
+                      style={{
+                        gridTemplateRows: pagesOpen ? '1fr' : '0fr',
+                        opacity: pagesOpen ? 1 : 0,
+                      }}
+                    >
+                      <div className="overflow-hidden">
+                        <ul
+                          className="space-y-0.5 border-l py-2 pl-4"
+                          style={{ borderColor: borderTint }}
+                        >
+                          {morePages.map((page) => (
+                            <li key={`${page.href}-${page.text}`}>
+                              <Link
+                                href={page.href}
+                                className="group flex items-center gap-2 py-1.5 text-sm text-[var(--wb-text-secondary)] transition-colors hover:text-[var(--wb-text-main)]"
+                                style={{ fontFamily: 'var(--wb-body-font, sans-serif)' }}
+                              >
+                                <span
+                                  className="h-px w-2 shrink-0 transition-all duration-300 group-hover:w-3"
+                                  style={{
+                                    backgroundColor: primaryColor,
+                                    opacity: 0.6,
+                                  }}
+                                />
+                                {page.text}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </nav>
             </div>
 

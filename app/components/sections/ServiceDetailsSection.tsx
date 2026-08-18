@@ -4,7 +4,7 @@ import React from 'react';
 import { TiptapRenderer } from '@/app/components/ui/TiptapRenderer';
 import { cn, getImageSrc, TIPTAP_INHERIT } from '@/app/lib/utils';
 import { OptimizedImage, IMAGE_SIZES } from '@/app/components/ui/OptimizedImage';
-import { useThemeColors } from '@/app/hooks/useTheme';
+import { useThemeColors, useThemeFonts } from '@/app/hooks/useTheme';
 
 interface ServiceDetailsSectionProps {
     service: any;
@@ -22,6 +22,7 @@ export const ServiceDetailsSection: React.FC<ServiceDetailsSectionProps> = ({
     galleryImages
 }) => {
     const themeColors = useThemeColors();
+    const themeFonts = useThemeFonts();
 
     return (
         <div className="lg:col-span-8">
@@ -35,6 +36,39 @@ export const ServiceDetailsSection: React.FC<ServiceDetailsSectionProps> = ({
                         sizes={IMAGE_SIZES.sectionWide}
                         className="w-full h-auto max-h-[400px] object-cover rounded-2xl shadow-lg"
                     />
+                </div>
+            )}
+
+            {service.price && (
+                <div
+                    className="mb-8 flex flex-wrap items-baseline justify-between gap-4 border-y py-5"
+                    style={{
+                        borderColor: `color-mix(in srgb, ${themeColors.mainText} 12%, transparent)`,
+                    }}
+                >
+                    <span
+                        className="text-[10px] font-bold uppercase tracking-[0.3em]"
+                        style={{
+                            color: themeColors.secondaryText,
+                            fontFamily: themeFonts.body,
+                        }}
+                    >
+                        Pricing
+                    </span>
+                    <span
+                        className="text-2xl font-light uppercase tracking-[0.05em] lg:text-3xl"
+                        style={{
+                            color: themeColors.mainText,
+                            fontFamily: themeFonts.heading,
+                        }}
+                    >
+                        {service.price}
+                        {service.priceType === 'range' ? (
+                            <span className="ml-2 text-xs font-light uppercase tracking-[0.15em] text-[var(--wb-text-secondary)]">
+                                starts at
+                            </span>
+                        ) : null}
+                    </span>
                 </div>
             )}
 
